@@ -56,13 +56,14 @@ const onInput = () => {
       addCountryMarkup(...result);
     })
     .catch(errorQuery => {
+      if(searchQuery){
       clearCountryDescription();
       error({
         text: 'Please enter the correct country name!',
         delay: 1000,
         sticker: false,
       });
-      console.log(errorQuery);
+      console.log(errorQuery);}
     });
 };
 
