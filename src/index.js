@@ -29,19 +29,13 @@ const onInput = () => {
   const searchQuery = refs.input.value.trim();
   fetchCountries(searchQuery)
     .then(response => {
-      return response.json();
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error(response.statusText);
     })
     .then(result => {
       refs.searchList.innerHTML = '';
-
-      if (result.status == '404') {
-        error({
-          text: 'Please enter the correct country name!',
-          delay: 1000,
-          sticker: false,
-        });
-        return;
-      }
 
       if (result.length > 10) {
         clearCountryDescription();
@@ -73,7 +67,7 @@ const onInput = () => {
       if (searchQuery) {
         clearCountryDescription();
         error({
-          text: 'Ups! Try again!',
+          text: 'Please enter the correct country name!',
           delay: 1000,
           sticker: false,
         });
