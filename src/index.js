@@ -1,9 +1,9 @@
 import './styles.css';
 import fetchCountries from './fetchCountries';
 import countryTemplate from './templates/country-template.hbs';
-import '@pnotify/core/dist/BrightTheme.css';
-import { alert, notice, info, success, error } from '@pnotify/core';
 import debounce from 'lodash.debounce';
+import '@pnotify/core/dist/BrightTheme.css';
+import { Stack, error, alert } from '@pnotify/core';
 
 const refs = {
   input: document.querySelector('#search-input'),
@@ -26,44 +26,59 @@ const clearCountryDescription = () => {
 };
 
 const onInput = () => {
-  let searchQuery = refs.input.value;
-
+  const searchQuery = refs.input.value.trim();
   fetchCountries(searchQuery)
     .then(response => {
       return response.json();
     })
     .then(result => {
       refs.searchList.innerHTML = '';
+
+      if (result.status == '404') {
+        error({
+          text: 'Please enter the correct country name!',
+          delay: 1000,
+          sticker: false,
+        });
+        return;
+      }
+
       if (result.length > 10) {
-        info({
+        clearCountryDescription();
+        alert({
           text: 'Too many matches found. Please entry more specific query!',
           delay: 1000,
           sticker: false,
+          stack: new Stack({
+            dir1: 'up',
+            dir2: 'right',
+            firstpos1: 30,
+            firstpos2: 30,
+          }),
         });
         return;
       }
       if (result.length > 1) {
         clearCountryDescription();
 
-        let markup = result.reduce((acc, item) => {
+        const markup = result.reduce((acc, item) => {
           acc += `<li>${item.name}</li>`;
           return acc;
         }, '');
         refs.searchList.innerHTML = markup;
-        return;
       }
-
-      addCountryMarkup(...result);
+      if (result.length === 1) addCountryMarkup(...result);
     })
     .catch(errorQuery => {
-      if(searchQuery){
-      clearCountryDescription();
-      error({
-        text: 'Please enter the correct country name!',
-        delay: 1000,
-        sticker: false,
-      });
-      console.log(errorQuery);}
+      if (searchQuery) {
+        clearCountryDescription();
+        error({
+          text: 'Ups! Try again!',
+          delay: 1000,
+          sticker: false,
+        });
+        console.log(errorQuery);
+      }
     });
 };
 
